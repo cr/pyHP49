@@ -11,22 +11,7 @@ from string import maketrans
 from struct import pack
 from time import sleep
 
-def lsusb():
-  for bus in usb.busses:
-    for dev in usb.devices:
-      print repr(dev)
-      print "Device:", dev.filename
-      print "  idVendor: %d (0x%04x)" % (dev.idVendor, dev.idVendor)
-      print "  idProduct: %d (0x%04x)" % (dev.idProduct, dev.idProduct)
-      print "Manufacturer:", dev.iManufacturer
-      print "Serial:", dev.iSerialNumber
-      print "Product:", dev.iProduct
-
-#lsusb()
-
-
 class HP49( object ):
-
 
   def __init__( self ):
     self.dev = None
