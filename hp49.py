@@ -22,6 +22,7 @@ class HP49( object ):
     self.modem = None
     self.inithputf()
     self.initobjtypes()
+    self.firstc = True
 
   def connect( self ):
     # so far just the first hp49 is supported
@@ -78,16 +79,26 @@ class HP49( object ):
     return self.intf
 
   def getc( self, size, timeout=1 ):
-    data = self.read( size, timeout=timeout*1000 )
+    data = self.read( size, timeout=10000 )
     print "getc:", size, data
-    return 
+    if size==1:
+      return chr(data[0])
+    else:
+      return [chr(b) for b in  data]
 
   def putc( self, data, timeout=1 ):
-    print "putc: ", data
-    return self.epout.write( data, timeout=timeout*1000 )
+    if (data == "C"):
+      if self.firstc == True:
+        data = "D"
+        print "D hack!"
+        self.firstc = False
+    print "putc:", hex(ord(data)),
+    ret = self.epout.write( data, timeout=10000 )
+    print ret
+    return ret
 
   def mkpacket( self, data ):
-    crc = self.modem.calc_checksum( data )
+    crc = self.hpchk( data )
     return pack( ">h%dsB" % len( data ), len( data ), data, crc )
 
   def tohexstr( self, dat ):
@@ -107,6 +118,12 @@ class HP49( object ):
       return arr
     else:
       return ''.join( chr( b ) for b in arr )
+
+  def toarr( self, s ):
+    if isinstance( s, str ):
+      return [ord(x) for x in s]
+    else:
+      return s
 
   def cmd( self, cmd, args=None ):
     if args:
@@ -137,7 +154,7 @@ class HP49( object ):
   def read( self, length, timeout=2000 ):
     inp = []
     while len( inp ) < length:
-    	inp += self.epin.read( length-len(inp), timeout=2000 )
+    	inp += self.epin.read( length-len(inp), timeout=timeout )
     return inp
 
   def sendpacket( self, dat ):
@@ -162,7 +179,8 @@ class HP49( object ):
       print "DATA:", self.tohexstr( dat ) 
       print "     ", self.torepr( dat )
       print "CRC:", "%02x" % crc
-      if crc == self.modem.calc_checksum( dat ):
+      #if crc == self.modem.calc_checksum( dat ):
+      if crc == self.hpchk( dat ):
         break
       else:
         print "CRC NACK!"
@@ -172,8 +190,8 @@ class HP49( object ):
     return dat
 
   def flush( self, timeout=1000 ):
+    inp = []
     while True:
-      inp = []
       try:
         inp += self.read( 64, timeout=timeout )
         print "FLUSH:", self.tohexstr( inp )
@@ -254,16 +272,81 @@ class HP49( object ):
     for f in ls:
       print f[0], f[1], f[2], f[3]
 
+  def get( self, remotefile ):
+    hp.cmd( "G", remotefile )
+    if not hp.waitack():
+      print "NACK on remote file", remotefile
+      return False
+    sleep(1)
+    data = []
+    hp.cmd( "D" )
+
+    while True:
+      sleep(0.1)
+      ptype = chr(hp.read( 1 )[0])
+
+      if ptype == '\x01': #SOH
+        print "SOH",
+        inp = hp.read( 132 )
+        print self.tohexstr( inp ),
+        crc = hp.hpcrc( inp[2:-2] )
+        if inp[-2]*256 + inp[-1] == crc:        
+            hp.write( '\x06' )
+            data += inp[2:-2]
+            print "CHKSUM OK"
+        else:
+            hp.write( '\x04' )
+            print "CHKSUM FAIL"
+
+      elif ptype == '\x02': #STX
+        print "STX",
+        inp = hp.read( 1028 )
+        print self.tohexstr( inp ),
+        crc = hp.hpcrc( inp[2:-2] )
+        if inp[-2]*256 + inp[-1] == crc:        
+            hp.write( '\x06' )
+            data += inp[2:-2]
+            print "CHKSUM OK"
+        else:
+            hp.write( '\x04' )
+            print "CHKSUM FAIL"
+
+      elif ptype == '\x04': #EOT
+        print "EOT"
+        hp.write('\x06')
+        break
+
+      else:
+        print "UNSUPPORTED PACKET TYPE", hex(ord(ptype))
+        hp.flush()
+        hp.write('\x04')
+        # TODO: how does the abort sequence look like?
+
+    sleep(0.5)
+    hp.write('\x06')
+    return data
+
+  def hpchk( self, data, start=0 ):
+    return ( sum( self.toarr( data ) ) + start ) & 0xff
+
+  def hpcrc( self, data, start=0 ):
+    e = start
+    for x in self.toarr( data ):
+      lo =  (x       ^ e) & 0xf
+      e  =  (e >> 4) ^ (lo + (lo << 7) + (lo << 12))
+      hi = ((x >> 4) ^ e) & 0xf
+      e  =  (e >> 4) ^ (hi + (hi << 7) + (hi << 12))
+    return e
+
+# main ##########################################################################################
+
 hp = HP49()
 if not hp.connect():
   print "ERROR: no hp49 found"
   sys.exit( 5 )
 
-embed()
-sys.exit()
-
 # Flag: overwrite existing files
-hp.cmd( "E", "-36 CF" ) ; hp.waitack()
+#hp.cmd( "E", "-36 CF" ) ; hp.waitack()
 
 # Memory info
 hp.cmd( "M" ) ; print hp.readpacket()
@@ -275,11 +358,13 @@ hp.cmd( "V" ) ; print hp.readpacket()
 #hp.cmd( "L" ) ; print hp.readpacket()
 
 # Path
-hp.cmd( "E", "PATH \x8dSTR XMIT DROP"  ) ; hp.waitack() ; print hp.readpacket()
+#hp.cmd( "E", "PATH \x8dSTR XMIT DROP"  ) ; hp.waitack() ; print hp.readpacket()
 
 # Chdir
-hp.cmd( "E", "CASDIR" ) ; hp.waitack()
+#hp.cmd( "E", "CASDIR" ) ; hp.waitack()
 
-x=r'"%%%%HP: T(3)A("CASE -17. FS? THEN "R" END -18. FS? THEN "G" END "D" END +")F(" + IF -51. FS? THEN "," ELSE "." END ");\x0a" + + IFERR \x27%s\x27 RCL STR + \x27ttt\x27 STO THEN CLEAR "N" ELSE "Y" END XMIT'
+#x=r'"%%%%HP: T(3)A("CASE -17. FS? THEN "R" END -18. FS? THEN "G" END "D" END +")F(" + IF -51. FS? THEN "," ELSE "." END ");\x0a" + + IFERR \x27%s\x27 RCL STR + \x27ttt\x27 STO THEN CLEAR "N" ELSE "Y" END XMIT'
 
+embed()
+sys.exit()
 
