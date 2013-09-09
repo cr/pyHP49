@@ -6,7 +6,6 @@
 from IPython import embed
 import sys
 import usb
-import xmodem
 from string import maketrans
 from struct import pack
 from time import sleep
@@ -19,7 +18,6 @@ class HP49( object ):
     self.intf = None
     self.epin = None
     self.epout = None
-    self.modem = None
     self.inithputf()
     self.initobjtypes()
     self.firstc = True
@@ -71,31 +69,8 @@ class HP49( object ):
     assert( self.epin.bEndpointAddress == 129 ) # srsly?
     assert( self.epout.bEndpointAddress == 3 )
 
-    # see https://pypi.python.org/pypi/xmodem
-    # and http://pythonhosted.org/xmodem/xmodem.html
-    self.modem = xmodem.XMODEM( self.getc, self.putc )
-
     self.dev.reset()
     return self.intf
-
-  def getc( self, size, timeout=1 ):
-    data = self.read( size, timeout=10000 )
-    print "getc:", size, data
-    if size==1:
-      return chr(data[0])
-    else:
-      return [chr(b) for b in  data]
-
-  def putc( self, data, timeout=1 ):
-    if (data == "C"):
-      if self.firstc == True:
-        data = "D"
-        print "D hack!"
-        self.firstc = False
-    print "putc:", hex(ord(data)),
-    ret = self.epout.write( data, timeout=10000 )
-    print ret
-    return ret
 
   def mkpacket( self, data ):
     crc = self.hpchk( data )
@@ -179,7 +154,6 @@ class HP49( object ):
       print "DATA:", self.tohexstr( dat ) 
       print "     ", self.torepr( dat )
       print "CRC:", "%02x" % crc
-      #if crc == self.modem.calc_checksum( dat ):
       if crc == self.hpchk( dat ):
         break
       else:
