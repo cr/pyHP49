@@ -21,6 +21,7 @@ class HP49( object ):
     self.epout = None
     self.modem = None
     self.inithputf()
+    self.initobjtypes()
 
   def connect( self ):
     # so far just the first hp49 is supported
@@ -195,9 +196,9 @@ class HP49( object ):
   def utftohp( self, s ):
     return s.translate( self.transutftohp ).encode( "raw_unicode_escape" )
 
-  def objtype( self, t ):
+  def initobjtypes( self ):
     #http://www.hpcalc.org/details.php?id=5910
-    types = {
+    self.objtypes = {
       0x3329: ("DOREAL","real (%) 153."),
       0x7729: ("DOCMP","complex (C%) (3.,4.)"),
       0x2C2A: ("DOCSTR","string ($) 'Hello'"),
@@ -234,7 +235,9 @@ class HP49( object ):
       0xAC26: ("DOFLASHP","Flash Pointer (FPTR n n; FPTR2 ^name)"),
       0xD526: ("DOAPLET","Aplet (not yet implemented)")
     }
-    return types[t][0]
+
+  def objtype( self, t ):
+    return self.objtypes[t][0]
 
   def ls( self ):
     self.cmd( "L" )
