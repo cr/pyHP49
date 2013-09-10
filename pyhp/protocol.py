@@ -77,6 +77,9 @@ def get( remotefile ):
       print "NACK on remote file", remotefile
       return False
     sleep(1)
+    return download()
+
+def download():
     data = []
     cmd( "D" )
 

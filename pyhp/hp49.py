@@ -23,6 +23,7 @@ class HP49( object ):
       except:
         print "Please enable XMODEM server mode (right-shift-release arrow-right)...",
         sys.stdout.flush()
+        sys.exit(5) # TODO: fix detection and remove hackish workaround
       while True:
         try:
           protocol.cancel()
@@ -32,7 +33,6 @@ class HP49( object ):
           break
         except:
           sleep( 1 )
-          sys.exit(5) # TODO: fix detection and remove hackish workaround
       print "OK"
       sys.stdout.flush()
 
@@ -64,20 +64,33 @@ class HP49( object ):
   def cmd( self, cmd, args=None ):
     protocol.cmd( cmd, args=args )
 
+  def waitack( self ):
+    print hex( com.read( 1 )[0] )
+
   def read( self, len=0 ):
     if len == 0:
-      return protocol.readpacket()
+      data = protocol.readpacket()
     else:
-      return com.read( len )
+      data = com.read( len )
+    print hpstr.tohexstr( data )
+    print hpstr.torepr( data )
+    return data
 
-  def xeq( self, cmd, args=None ):
+  def sendack( self ):
+    protocol.sendack()
+
+  def sendnack( self ):
+    protocol.sendnack()
+
+  def write( self, data ):
+    return com.write( data )
+
+  def xeq( self, args ):
     protocol.cmd( "E", args=args )
-    if protocol.waitack() == True:
-      print "ACK"
-      return True
-    else:
-      print "NACK"
-      return False
+    return protocol.waitack()
+
+  def download( self ):
+    return protocol.download()
 
   def ls( self ):
     ls = cmd.ls()
