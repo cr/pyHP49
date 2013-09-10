@@ -62,29 +62,31 @@ class HP49( object ):
     com.connect( id )
     sleep( 1 )
 
+  def read( self, length=0, timeout=1000, until=False ):
+    if until != False:
+      return com.read( length=length, timeout=timeout, until=until )
+    elif length == 0:
+      data = protocol.readpacket()
+    else:
+      data = com.read( length, timeout=timeout )
+    print hpstr.tohexstr( data )
+    print hpstr.torepr( data )
+    return data
+
+  def write( self, data, timeout=1000 ):
+    return com.write( data, timeout=timeout )
+
   def cmd( self, cmd, args=None ):
     protocol.cmd( cmd, args=args )
 
   def waitack( self ):
     print hex( com.read( 1 )[0] )
 
-  def read( self, len=0 ):
-    if len == 0:
-      data = protocol.readpacket()
-    else:
-      data = com.read( len )
-    print hpstr.tohexstr( data )
-    print hpstr.torepr( data )
-    return data
-
   def sendack( self ):
     protocol.sendack()
 
   def sendnack( self ):
     protocol.sendnack()
-
-  def write( self, data ):
-    return com.write( data )
 
   def xeq( self, args ):
     protocol.cmd( "E", args=args )
@@ -111,12 +113,7 @@ class HP49( object ):
   def path( self ):
     protocol.cmd( "E", "PATH \x8dSTR XMIT DROP" )
     protocol.waitack()
-    response = []
-    try:
-      response = com.read( until=ord('}') )
-    except:
-      print "Spurious USB reads. Data is incomplete."
-      # TODO: low-level read / compare cycle misses bytes from XMIT
+    response = com.read( until=ord( '}' ) )
     return hpstr.tostr( response )
 
   def pwd( self ):
