@@ -4,6 +4,7 @@
 #http://www.beyondlogic.org/usbnutshell/usb1.shtml
 
 import usb
+import array
 
 dev = None
 cfg = None
@@ -77,19 +78,22 @@ def write( data, timeout=1000 ):
     global epout
     return epout.write( data, timeout=timeout )
 
-def read( length=1, timeout=1000, until=False ):
+def read( length=0, timeout=1000, until=False ):
     """Reads length bytes of data from the calculator and returns them as
        array.array of bytes.
     """
     global epin
-    inp = []
+    inp = array.array( 'B' )
     if until==False:
-      while len( inp ) < length:
-    	inp += epin.read( length-len(inp), timeout=timeout )
-    else:
-      inp += epin.read( 1, timeout=timeout )
+      if length == 0:
+        inp += epin.read( 1024, timeout=timeout )
+      else:
+        while len( inp ) < length:
+          inp += epin.read( length-len(inp), timeout=timeout )
+    else: # TODO: this doesn't work well due to speed issues
+      inp += epin.read( epin.wMaxPacketSize, timeout=timeout )
       while inp[-1] != until:
-        inp += epin.read( 1, timeout=timeout )
+        inp += epin.read( epin.wMaxPacketSize, timeout=timeout )
     return inp
 
 def reset():
@@ -98,12 +102,12 @@ def reset():
     global dev
     dev.reset()
 
-def flush( self, timeout=200 ):
+def flush( timeout=1000 ):
     """Flushes the input buffer.
     """
     while True:
       try:
-        read( 128, timeout=timeout )
+        read( 1024, timeout=timeout )
       except:
         break
     reset()
