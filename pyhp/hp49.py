@@ -108,6 +108,20 @@ class HP49( object ):
       print "Unsupported encoding:", s
       return s
 
+  def path( self ):
+    protocol.cmd( "E", "PATH \x8dSTR XMIT DROP" )
+    protocol.waitack()
+    response = []
+    try:
+      response = com.read( until=ord('}') )
+    except:
+      print "Spurious USB reads. Data is incomplete."
+      # TODO: low-level read / compare cycle misses bytes from XMIT
+    return hpstr.tostr( response )
+
+  def pwd( self ):
+    print hpstr.hptoutf( self.path() )
+
   def cd( self, remoteobj ):
     remoteobj = self.tohp( remoteobj )
     protocol.cmd( "E", remoteobj )
