@@ -77,14 +77,19 @@ def write( data, timeout=1000 ):
     global epout
     return epout.write( data, timeout=timeout )
 
-def read( length, timeout=1000 ):
+def read( length=1, timeout=1000, until=False ):
     """Reads length bytes of data from the calculator and returns them as
        array.array of bytes.
     """
     global epin
     inp = []
-    while len( inp ) < length:
+    if until==False:
+      while len( inp ) < length:
     	inp += epin.read( length-len(inp), timeout=timeout )
+    else:
+      inp += epin.read( 1, timeout=timeout )
+      while inp[-1] != until:
+        inp += epin.read( 1, timeout=timeout )
     return inp
 
 def reset():
