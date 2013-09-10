@@ -140,7 +140,7 @@ def upload( data ):
     resp = com.read( 1 )[0]
     if resp != ord( 'D' ):
       cancel()
-      print "Device didn't take the file, sent", hex( resp )
+      print "Device didn't accept file:", hex( resp )
       return False
 
     pos = 0
@@ -165,16 +165,16 @@ def upload( data ):
       chunk = data[pos:pos+plen]
       if ptype == 1: #SOH
         com.write( [1] )
-        print "SOH",
+        #print "SOH",
         sleep( 0.1 )
         com.write( [pktnr, 255-pktnr] )
-        print hpstr.tohexstr( [pktnr, 255-pktnr] ),
+        #print hpstr.tohexstr( [pktnr, 255-pktnr] ),
         com.write( chunk )
-        print hpstr.tohexstr( chunk ),
+        #print hpstr.tohexstr( chunk ),
         crc = hpcrc( chunk )
         com.write( [crc>>8, crc & 0xff ] )
         if waitack() == True:
-          print "CHKSUM ACK"
+          #print "CHKSUM ACK"
           pos += plen
         else:
           print "CHKSUM NACK"
@@ -182,7 +182,7 @@ def upload( data ):
         # TODO: cancel checking
 
     com.write( [4]  ) #EOT
-    print "EOT"
+    #print "EOT"
     #waitack()
     #sendack()
     return waitack()
