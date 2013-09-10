@@ -109,6 +109,16 @@ class HP49( object ):
     protocol.cmd( "E", remotedir )
     return protocol.waitack()
 
+  def rm( self, remotefile ):
+    if isinstance( remotefile, unicode ):
+      remotefile = hpstr.utftohp( remotefile )
+    elif isinstance( remotefile, str ):
+      remotefile = hpstr.utftohp( remotefile.decode( "utf-8" ) )
+    else:
+      print "unsupported filename encoding:", remotefile
+    protocol.cmd( "E", "'"+remotefile+"' PURGE" )
+    return protocol.waitack()
+
   def get( self, remotefile, ret=False ):
     if isinstance( remotefile, unicode ):
       remotefile = hpstr.utftohp( remotefile )
