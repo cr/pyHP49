@@ -5,7 +5,7 @@ This is experimental code and most likely unfit for your purposes.
 
 ## Requirements
 
-* pip install pyusb xmodem
+* pip install pyusb
 
 ## Usage
 
