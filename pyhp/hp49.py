@@ -118,14 +118,14 @@ class HP49( object ):
     protocol.cmd( "E", "'"+remoteobj+"' PURGE" )
     return protocol.waitack()
 
-  def get( self, remoteobj, ret=False ):
+  def get( self, remoteobj, hexdump=False ):
     remoteobj = self.tohp( remoteobj )
     data = cmd.get( remoteobj )
-    if ret == False:
+    if hexdump == False:
+      return data
+    else:
       print hpstr.tohexstr( data )
       return
-    else:
-      return data
 
   def put( self, remoteobj, data ):
     remoteobj = self.tohp( remoteobj )
