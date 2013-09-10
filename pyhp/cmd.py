@@ -83,3 +83,9 @@ def get( remotefile ):
     """
     return protocol.get( remotefile )
 
+def put( remotefile, data ):
+    """Writes data to remotefile in current directory and returns status.
+       Currently only binary mode is supported.
+    """
+    return protocol.put( remotefile, data )
+

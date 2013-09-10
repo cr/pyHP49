@@ -17,6 +17,7 @@ class HP49( object ):
     if autoconnect == True:
       self.waitforhp()
       self.connect()
+      com.reset()
       try:
         cmd.version()
         return
@@ -98,6 +99,16 @@ class HP49( object ):
       print '{0:016b}  {1:7}  {2:7} '.format( 
         f[3], cmd.objtype( f[1] ), f[2] ), hpstr.hptoutf( f[0] )
 
+  def cd( self, remotedir ):
+    if isinstance( remotedir, unicode ):
+      remotedir = hpstr.utftohp( remotedir )
+    elif isinstance( remotedir, str ):
+      remotedir = hpstr.utftohp( remotedir.decode( "utf-8" ) )
+    else:
+      print "unsupported filename encoding:", remotedir
+    protocol.cmd( "E", remotedir )
+    return protocol.waitack()
+
   def get( self, remotefile, ret=False ):
     if isinstance( remotefile, unicode ):
       remotefile = hpstr.utftohp( remotefile )
@@ -111,6 +122,15 @@ class HP49( object ):
       return
     else:
       return data
+
+  def put( self, remotefile, data ):
+    if isinstance( remotefile, unicode ):
+      remotefile = hpstr.utftohp( remotefile )
+    elif isinstance( remotefile, str ):
+      remotefile = hpstr.utftohp( remotefile.decode( "utf-8" ) )
+    else:
+      print "unsupported filename encoding:", remotefilename
+    return cmd.put( remotefile, hpstr.toarr( data ) )
 
   def version( self ):
     print cmd.version()
