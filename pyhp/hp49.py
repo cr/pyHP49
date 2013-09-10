@@ -132,10 +132,10 @@ class HP49( object ):
     return cmd.put( remoteobj, hpstr.toarr( data ) )
 
   def version( self ):
-    print cmd.version()
+    return cmd.version()
 
   def meminfo( self ):
-    print cmd.meminfo(), "bytes free."
+    return cmd.meminfo()
 
   def info( self ):
     self.version()
