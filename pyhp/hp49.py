@@ -99,48 +99,37 @@ class HP49( object ):
       print '{0:016b}  {1:7}  {2:7} '.format( 
         f[3], cmd.objtype( f[1] ), f[2] ), hpstr.hptoutf( f[0] )
 
-  def cd( self, remotedir ):
-    if isinstance( remotedir, unicode ):
-      remotedir = hpstr.utftohp( remotedir )
-    elif isinstance( remotedir, str ):
-      remotedir = hpstr.utftohp( remotedir.decode( "utf-8" ) )
+  def tohp( self, s ):
+    if isinstance( s, unicode ):
+      return hpstr.utftohp( s )
+    elif isinstance( s, str ):
+      return hpstr.utftohp( s.decode( "utf-8" ) )
     else:
-      print "unsupported filename encoding:", remotedir
-    protocol.cmd( "E", remotedir )
+      print "Unsupported encoding:", s
+      return s
+
+  def cd( self, remoteobj ):
+    remoteobj = self.tohp( remoteobj )
+    protocol.cmd( "E", remoteobj )
     return protocol.waitack()
 
-  def rm( self, remotefile ):
-    if isinstance( remotefile, unicode ):
-      remotefile = hpstr.utftohp( remotefile )
-    elif isinstance( remotefile, str ):
-      remotefile = hpstr.utftohp( remotefile.decode( "utf-8" ) )
-    else:
-      print "unsupported filename encoding:", remotefile
-    protocol.cmd( "E", "'"+remotefile+"' PURGE" )
+  def rm( self, remoteobj ):
+    remoteobj = self.tohp( remoteobj )
+    protocol.cmd( "E", "'"+remoteobj+"' PURGE" )
     return protocol.waitack()
 
-  def get( self, remotefile, ret=False ):
-    if isinstance( remotefile, unicode ):
-      remotefile = hpstr.utftohp( remotefile )
-    elif isinstance( remotefile, str ):
-      remotefile = hpstr.utftohp( remotefile.decode( "utf-8" ) )
-    else:
-      print "unsupported filename encoding:", remotefilename
-    data = cmd.get( remotefile )
+  def get( self, remoteobj, ret=False ):
+    remoteobj = self.tohp( remoteobj )
+    data = cmd.get( remoteobj )
     if ret == False:
       print hpstr.tohexstr( data )
       return
     else:
       return data
 
-  def put( self, remotefile, data ):
-    if isinstance( remotefile, unicode ):
-      remotefile = hpstr.utftohp( remotefile )
-    elif isinstance( remotefile, str ):
-      remotefile = hpstr.utftohp( remotefile.decode( "utf-8" ) )
-    else:
-      print "unsupported filename encoding:", remotefilename
-    return cmd.put( remotefile, hpstr.toarr( data ) )
+  def put( self, remoteobj, data ):
+    remoteobj = self.tohp( remoteobj )
+    return cmd.put( remoteobj, hpstr.toarr( data ) )
 
   def version( self ):
     print cmd.version()
