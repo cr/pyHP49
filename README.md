@@ -15,8 +15,8 @@ Connect the calculator via USB, put it into XMODEM server mode (right-shift-rele
 right-arrow), and then run ./hp49.py. Or run it first, and it will prompt you through
 the steps.
 
-You are dropped into an IPython shell, so you can have some fun with the hp object.
-To get usage information on the main class:
+You are dropped into an IPython shell, so you can have some fun with the hp module.
+To get usage information on the main module:
 
 * hp.help()
 
