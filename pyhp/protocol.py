@@ -120,8 +120,9 @@ def download():
 
       else:
         print "UNSUPPORTED PACKET TYPE", hex(ptype)
+        com.flush( all=True )
         cancel()
-        com.flush()
+        return None
 
     sleep(0.5)
     sendack()
