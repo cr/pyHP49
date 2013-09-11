@@ -3,6 +3,8 @@ HP49USB
 
 This is experimental code and most likely unfit for your purposes.
 
+It might accidentally delete all your calculator data. Make a backup!
+
 ## Requirements
 
 * pip install pyusb
@@ -10,8 +12,20 @@ This is experimental code and most likely unfit for your purposes.
 ## Usage
 
 Connect the calculator via USB, put it into XMODEM server mode (right-shift-release
-right-arrow), and then run ./hp49.py. You are dropped into an Ipython shell,
-so you can have some fun with the hp object.
+right-arrow), and then run ./hp49.py. Or run it first, and it will prompt you through
+the steps.
+
+You are dropped into an IPython shell, so you can have some fun with the hp object.
+To get usage information on the main class:
+
+> hp.help()
+
+If you want to dive into the depths of the code, also try:
+
+> help(cmd)
+> help(hpstr),
+> help(protocol)
+> help(com) 
 
 ## Examples
 ```
