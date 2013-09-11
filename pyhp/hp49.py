@@ -58,6 +58,12 @@ class HP49( object ):
     """
     return com.dev != None
 
+  def reset( self ):
+    """Resets USB device. It MAY recover when communication with the HP is stuck,
+       but it WILL segfault pyusb if you reset twice in a row.
+    """
+    com.reset()
+
   def waitforxmodem( self ):
     """Interacts with user until XMODEM is enabled.
     """
