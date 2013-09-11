@@ -17,28 +17,7 @@ class HP49( object ):
     if autoconnect == True:
       self.waitforhp()
       self.connect()
-      com.reset()
-      try:
-        cmd.version()
-        return
-      except:
-        print "Please enable XMODEM server mode (right-shift-release arrow-right)...",
-        sys.stdout.flush()
-        sys.exit(5) # TODO: fix detection and remove hackish workaround
-      while True:
-        try:
-          protocol.cancel()
-          com.flush()
-          com.dev.reset()
-          cmd.version()
-          break
-        except:
-          sleep( 1 )
-      print "OK"
-      sys.stdout.flush()
-
-  def connected( self ):
-    return com.dev != None
+      self.waitforxmodem()
 
   def find( self ):
     hps = com.find()
@@ -56,11 +35,33 @@ class HP49( object ):
       sys.stdout.flush()
       while len( com.find() ) == 0:
         sleep( 1 )
+      sleep( 1 ) # This one is important
       print "OK"
+      
+  def connect( self, cid=0 ):
+    return com.connect( cid=cid, vendor=0x03f0, product=0x0121 )
 
-  def connect( self, id=0 ):
-    com.connect( id )
-    sleep( 1 )
+  def connected( self ):
+    return com.dev != None
+
+  def waitforxmodem( self ):
+    try:
+      com.reset()
+      sleep( 1 ) # This one is important
+      cmd.version()
+      return
+    except:
+      print "Please enable XMODEM server mode (right-shift-release arrow-right)...",
+      sys.stdout.flush()
+      sleep( 1 )
+    while True:
+      try:
+        com.reset()
+        cmd.version()
+        print "OK"
+        break
+      except:
+        sleep( 0.1 )
 
   def read( self, length=0, timeout=1000, until=False ):
     if until != False:
