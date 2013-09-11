@@ -182,8 +182,8 @@ class HP49( object ):
        WARNING: will stop at first '#'. You must fetch the rest manually.
        WARNING: will hang comms if stack is empty.
     """
-    self.xeq( "IF DEPTH 0 ≠ THEN DUP →STR XMIT DROP END \"#\" XMIT DROP" )
-    s = com.read( until=ord('#') )[:-1]
+    self.xeq( "IF DEPTH 0 ≠ THEN DUP →STR XMIT DROP END \"\t\" XMIT DROP" )
+    s = com.read( until=ord('\t') )[:-1]
     s = hpstr.tostr( s )
     if utf == True:
       s = hpstr.hptoutf( s )
@@ -195,8 +195,8 @@ class HP49( object ):
        WARNING: will stop at first '#'. You must fetch the rest manually.
        WARNING: will hang comms if stack is empty.
     """
-    self.xeq( "IF DEPTH 0 ≠ THEN →STR XMIT DROP END \"#\" XMIT DROP" )
-    s = com.read( until=ord('#') )[:-1]
+    self.xeq( "IF DEPTH 0 ≠ THEN →STR XMIT DROP END \"\t\" XMIT DROP" )
+    s = com.read( until=ord('\t') )[:-1]
     s = hpstr.tostr( s )
     if utf == True:
       s = hpstr.hptoutf( s )
