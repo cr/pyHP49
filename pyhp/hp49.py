@@ -14,12 +14,17 @@ import sys
 class HP49( object ):
 
   def __init__( self, autoconnect=False ):
+    """Class constructor. Attempts autoconnect when told so.
+       WARNING: Consider this class singleton.
+    """
     if autoconnect == True:
       self.waitforhp()
       self.connect()
       self.waitforxmodem()
 
   def find( self ):
+    """Prints user message and returns the number of HP-49 connected via USB.
+    """
     hps = com.find()
     if len( hps ) == 0:
       print "No HP49-compatible USB devices connected."
@@ -30,6 +35,8 @@ class HP49( object ):
     return len( hps )
 
   def waitforhp( self ):
+    """Interacts with user until HP-49 is connected via USB.
+    """
     if len( com.find() ) == 0:
       print "Please connect HP49-compatible USB device...",
       sys.stdout.flush()
@@ -39,12 +46,21 @@ class HP49( object ):
       print "OK"
       
   def connect( self, cid=0 ):
+    """Connects to to the first HP-49 listed on USB,
+       or to the list number specified in cid.
+       Returns success status
+    """
     return com.connect( cid=cid, vendor=0x03f0, product=0x0121 )
 
   def connected( self ):
+    """Returns connection status.
+       WARNING: Will still return True if device is unplugged during operation.
+    """
     return com.dev != None
 
   def waitforxmodem( self ):
+    """Interacts with user until XMODEM is enabled.
+    """
     try:
       com.reset()
       sleep( 1 ) # This one is important
@@ -64,6 +80,11 @@ class HP49( object ):
         sleep( 0.1 )
 
   def read( self, length=0, timeout=1000, until=False, hexdump=False ):
+    """Reads specified number of bytes from device.
+       Default 0 reads the whole buffer.
+       When a stop byte (int) is specified in until, length is ignored.
+       Returns data read or prints hexdump if told so.
+    """
     data = com.read( length, timeout=timeout, until=until )
     if hexdump == True:
       print hpstr.tohexstr( data )
@@ -71,9 +92,16 @@ class HP49( object ):
       return data
 
   def write( self, data, timeout=1000 ):
+    """Writes data to USB.
+       Returns number of bytes written.
+    """
     return com.write( data, timeout=timeout )
 
   def readpacket( self, timeout=1000, hexdump=False ):
+    """Reads a HP format packet (length, data, checksum) from device.
+       Handles error recovery and ACKing.
+       Returns data or prints hexdump if told so.
+    """
     data = protocol.readpacket()
     if hexdump == True:
       print hpstr.tohexstr( data )
@@ -81,31 +109,57 @@ class HP49( object ):
       return data
 
   def cmd( self, cmd, args=None ):
+    """Sends HP command packet to device with optional argument string.
+       Known so far:
+       "V": version info 
+       "M": memory info
+       "E","str": execute RPL string
+       "G","obj": get object
+       "P",obj": put object
+    """
     protocol.cmd( cmd, args=args )
 
   def waitack( self ):
+    """Reads next byte from device and
+       returns True if it was an ACK(0x06).
+    """
     print hex( com.read( 1 )[0] )
 
   def sendack( self ):
+    """Sends ACK(0x06) to device.
+    """
     protocol.sendack()
 
   def sendnack( self ):
+    """Sends NACK(0x15) to device.
+    """
     protocol.sendnack()
 
   def xeq( self, args ):
+    """Executes RPL string on device.
+       Returns whether ACK status is True.
+    """
     protocol.cmd( "E", args=args )
     return protocol.waitack()
 
   def download( self ):
+    """Downloads data from device in HP's XMODEM dialects.
+       Device must be prepared with the "G" command.
+       Returns data array.
+    """
     return protocol.download()
 
   def ls( self ):
+    """Prints listing of current directory.
+    """
     ls = cmd.ls()
     for f in ls:
       print '{0:016b}  {1:7}  {2:7} '.format( 
         f[3], cmd.objtype( f[1] ), f[2] ), hpstr.hptoutf( f[0] )
 
   def tohp( self, s ):
+    """Converts string (regular or unicode) to HP encoding.
+    """
     if isinstance( s, unicode ):
       return hpstr.utftohp( s )
     elif isinstance( s, str ):
@@ -115,25 +169,39 @@ class HP49( object ):
       return s
 
   def path( self ):
+    """Returns current device directory as HP-encoded string.
+       Example: "{ HOME CASDIR }"
+    """
     protocol.cmd( "E", "PATH \x8dSTR XMIT DROP" )
     protocol.waitack()
     response = com.read( until=ord( '}' ) )
     return hpstr.tostr( response )
 
   def pwd( self ):
+    """Prints current device directory.
+    """
     print hpstr.hptoutf( self.path() )
 
   def cd( self, remoteobj ):
+    """Changes device directory to specified HP-encoded object string.
+       Returns ACK status.
+    """
     remoteobj = self.tohp( remoteobj )
     protocol.cmd( "E", remoteobj )
     return protocol.waitack()
 
   def rm( self, remoteobj ):
+    """Deletes remote object specified by HP-encoded string.
+       Returns ACK status.
+    """
     remoteobj = self.tohp( remoteobj )
     protocol.cmd( "E", "'"+remoteobj+"' PURGE" )
     return protocol.waitack()
 
   def get( self, remoteobj, hexdump=False ):
+    """Receives remote object specified by HP-encoded string.
+       Returns data or prints hexdump if told so.
+    """
     remoteobj = self.tohp( remoteobj )
     data = cmd.get( remoteobj )
     if hexdump == False:
@@ -143,16 +211,25 @@ class HP49( object ):
       return
 
   def put( self, remoteobj, data ):
+    """Writes data to remote object specified by HP-encoded string.
+       Returns ACK status.
+    """
     remoteobj = self.tohp( remoteobj )
     return cmd.put( remoteobj, hpstr.toarr( data ) )
 
   def version( self ):
+    """Returns version string of XMODEM server.
+    """
     return cmd.version()
 
   def meminfo( self ):
+    """Returns number of bytes available on device.
+    """
     return cmd.meminfo()
 
   def info( self ):
-    self.version()
-    self.meminfo()
+    """Prints device info to screen in a well-known format.
+    """
+    print "****", self.version(), "****"
+    print self.meminfo(), "bytes free"
 
