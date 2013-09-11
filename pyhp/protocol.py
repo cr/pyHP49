@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import com
+import com.hpusb as com
 import hpstr
 from struct import pack
 from time import sleep

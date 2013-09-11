@@ -3,7 +3,7 @@
 
 #http://www.beyondlogic.org/usbnutshell/usb1.shtml
 
-import com
+import com.hpusb as com
 import cmd
 import hpstr
 import protocol
@@ -12,22 +12,22 @@ import sys
 from pydoc import help as doc
 
 def find():
-    """Prints user message and returns the number of HP-49 connected via USB.
+    """Prints user message and returns the number of HP-49 connected.
     """
     hps = com.find()
     if len( hps ) == 0:
-      print "No HP49-compatible USB devices connected."
+      print "No HP49-compatible devices connected."
       sys.stdout.flush()
     else:
-      print "Number of HP49-compatible USB devices: %d" % len( hps )
+      print "Number of HP49-compatible devices: %d" % len( hps )
       sys.stdout.flush()
     return len( hps )
 
 def waitforhp():
-    """Interacts with user until HP-49 is connected via USB.
+    """Interacts with user until HP-49 is connected.
     """
     if len( com.find() ) == 0:
-      print "Please connect HP49-compatible USB device...",
+      print "Please connect HP49-compatible device...",
       sys.stdout.flush()
       while len( com.find() ) == 0:
         sleep( 1 )
@@ -35,11 +35,11 @@ def waitforhp():
       print "OK"
       
 def connect( cid=0 ):
-    """Connects to to the first HP-49 listed on USB,
+    """Connects to to the first HP-49 listed,
        or to the list number specified in cid.
        Returns success status
     """
-    return com.connect( cid=cid, vendor=0x03f0, product=0x0121 )
+    return com.connect( cid=cid )
 
 def open():
     """Convenience wrapper that interacts with user until HP is
@@ -145,7 +145,7 @@ def xeq( command, utf=True ):
        Returns whether ACK status is True.
     """
     if utf == True:
-      command = cmd.decode('utf-8')
+      command = command.decode('utf-8')
     protocol.cmd( "E", args=hpstr.utftohp( command ) )
     return protocol.waitack()
 

@@ -12,19 +12,19 @@ intf = None
 epin = None
 epout = None
 
-def find( vendor=0x03f0, product=0x0121 ):
+def find():
     """Returns list of usb device objects of all connected HPs.
     """
-    return usb.core.find( find_all=True, idVendor=vendor, idProduct=product )
+    return usb.core.find( find_all=True, idVendor=0x03f0, idProduct=0x0121 )
 
-def connect( cid=0, vendor=0x03f0, product=0x0121 ):
+def connect( cid=0 ):
     """Connects to the HP49 in the system numbered by device.
        Returns True if successfull, else False.
     """
     global dev, cfg, intf, epin, epout
 
     # TODO: this should not be a global singleton
-    dev = usb.core.find( find_all=True, idVendor=vendor, idProduct=product )[cid]
+    dev = usb.core.find( find_all=True, idVendor=0x03f0, idProduct=0x0121 )[cid]
     if not dev:
       return False
 
