@@ -199,7 +199,9 @@ class HP49( object ):
     return protocol.waitack()
 
   def get( self, remoteobj, hexdump=False ):
-    """Receives remote object specified by HP-encoded string.
+    """Receives remote object specified by unicode or utf-8-encoded
+       string that is passed through HP encoding.
+       Currently only BINARY transfer is supported.
        Returns data or prints hexdump if told so.
     """
     remoteobj = self.tohp( remoteobj )
@@ -211,7 +213,10 @@ class HP49( object ):
       return
 
   def put( self, remoteobj, data ):
-    """Writes data to remote object specified by HP-encoded string.
+    """Writes data to remote object specified by unicode or
+       utf-8-encoded string that is passed through HP encoding.
+       Currently only BINARY transfer is supported.
+       WARNING: data is not checked for correct format.
        Returns ACK status.
     """
     remoteobj = self.tohp( remoteobj )
