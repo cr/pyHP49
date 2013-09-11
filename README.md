@@ -1,9 +1,9 @@
-HP49USB
+pyHP
 =======
 
 This is experimental code and most likely unfit for your purposes. It might accidentally delete all your calculator data, or worse. Make a backup!
 
-It has been developed on a HP-50g, but should work on any HP-49x series calculator with a USB port.
+It has been developed on a HP-50g, but should easily be made to work, perhaps work out of the box, on any HP-49x series calculator with a USB port.
 
 ## Requirements
 
