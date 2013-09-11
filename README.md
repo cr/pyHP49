@@ -18,14 +18,14 @@ the steps.
 You are dropped into an IPython shell, so you can have some fun with the hp object.
 To get usage information on the main class:
 
-> hp.help()
+* hp.help()
 
 If you want to dive into the depths of the code, also try:
 
-> help(cmd)
-> help(hpstr),
-> help(protocol)
-> help(com) 
+* help(cmd)
+* help(hpstr)
+* help(protocol)
+* help(com) 
 
 ## Examples
 ```
