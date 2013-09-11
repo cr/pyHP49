@@ -6,6 +6,7 @@
 from IPython.terminal.embed import InteractiveShellEmbed
 ipshell = InteractiveShellEmbed( banner1="ready.", exit_msg="bye." )
 
+import pyhp
 import pyhp.hp49 as hp
 
 # main ##########################################################################################
