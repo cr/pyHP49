@@ -63,19 +63,22 @@ class HP49( object ):
       except:
         sleep( 0.1 )
 
-  def read( self, length=0, timeout=1000, until=False ):
-    if until != False:
-      return com.read( length=length, timeout=timeout, until=until )
-    elif length == 0:
-      data = protocol.readpacket()
+  def read( self, length=0, timeout=1000, until=False, hexdump=False ):
+    data = com.read( length, timeout=timeout, until=until )
+    if hexdump == True:
+      print hpstr.tohexstr( data )
     else:
-      data = com.read( length, timeout=timeout )
-    print hpstr.tohexstr( data )
-    print hpstr.torepr( data )
-    return data
+      return data
 
   def write( self, data, timeout=1000 ):
     return com.write( data, timeout=timeout )
+
+  def readpacket( self, timeout=1000, hexdump=False ):
+    data = protocol.readpacket()
+    if hexdump == True:
+      print hpstr.tohexstr( data )
+    else:
+      return data
 
   def cmd( self, cmd, args=None ):
     protocol.cmd( cmd, args=args )
