@@ -28,7 +28,7 @@ If you want to dive into the depths of the code, also try:
 * help(com) 
 
 ## Examples
-```
+``` python
 $ ./hp49.py 
 XModem Version 1.0
 197220 bytes free.
@@ -66,5 +66,15 @@ In [6]: hp.ls()
 In [7]: hp.rm("TEST")
 Out[7]: True
 
-In [8]: hp.xeq( "VERSION" ) # see stack
+n [8]: hp.specialchars()
+∠ ā ∇ √ ∫ Σ ▶ π ∂ ≤ ≥ ≠ α → ← ↓ ↑ γ δ ε η θ λ ρ σ τ ω Δ Π Ω ■ ∞
+
+In [9]: hp.pushobj( "'∫(0,2*π,SIN(X)/X,X)'" )
+Out[9]: True
+
+In [10]: hp.xeq( "EVAL" )
+Out[10]: True
+
+In [11]: print hp.popstr()
+1.41815157613
 ```
