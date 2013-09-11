@@ -17,14 +17,14 @@ def find( vendor=0x03f0, product=0x0121 ):
     """
     return usb.core.find( find_all=True, idVendor=vendor, idProduct=product )
 
-def connect( device=0, vendor=0x03f0, product=0x0121 ):
+def connect( cid=0, vendor=0x03f0, product=0x0121 ):
     """Connects to the HP49 in the system numbered by device.
        Returns True if successfull, else False.
     """
     global dev, cfg, intf, epin, epout
 
     # TODO: this should not be a global singleton
-    dev = usb.core.find( find_all=True, idVendor=vendor, idProduct=product )[device]
+    dev = usb.core.find( find_all=True, idVendor=vendor, idProduct=product )[cid]
     if not dev:
       return False
 
@@ -90,7 +90,7 @@ def read( length=0, timeout=1000, until=False ):
       else:
         while len( inp ) < length:
           inp += epin.read( length-len(inp), timeout=timeout )
-    else: # TODO: this doesn't work well due to speed issues
+    else:
       inp += epin.read( epin.wMaxPacketSize, timeout=timeout )
       while inp[-1] != until:
         inp += epin.read( epin.wMaxPacketSize, timeout=timeout )
@@ -102,12 +102,13 @@ def reset():
     global dev
     dev.reset()
 
-def flush( timeout=1000 ):
+def flush( all=False, timeout=100 ):
     """Flushes the input buffer.
     """
-    while True:
+    inp = array( 'B' )
+    while all:
       try:
-        read( 1024, timeout=timeout )
+        inp += read( epin.wMaxPacketSize*16, timeout=timeout )
       except:
         break
-    reset()
+    return inp
