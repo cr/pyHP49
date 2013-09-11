@@ -238,3 +238,7 @@ class HP49( object ):
     print "****", self.version(), "****"
     print self.meminfo(), "bytes free"
 
+  def help( self ):
+    """Prints usage information.
+    """
+    help( self )
