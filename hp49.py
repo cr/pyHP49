@@ -15,8 +15,7 @@ ipshell = InteractiveShellEmbed( banner1="ready.", exit_msg="bye." )
 if __name__ == "__main__":
 
   hp = pyhp.hp49.HP49( autoconnect=True )
-  print "****", hp.version(), "****"
-  print hp.meminfo(), "bytes free"
+  hp.info()
 
   # Flag: overwrite existing files
   #hp.cmd( "E", "-36 CF" ) ; hp.waitack()
