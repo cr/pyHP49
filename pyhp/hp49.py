@@ -141,11 +141,13 @@ class HP49( object ):
     """
     protocol.sendnack()
 
-  def xeq( self, args ):
-    """Executes RPL string on device.
+  def xeq( self, cmd, utf=True ):
+    """Converts utf-8 RPL cmd string to HP-encoding and executes it on device.
        Returns whether ACK status is True.
     """
-    protocol.cmd( "E", args=args )
+    if utf == True:
+      cmd = cmd.decode('utf-8')
+    protocol.cmd( "E", args=hpstr.utftohp( cmd ) )
     return protocol.waitack()
 
   def download( self ):
@@ -174,13 +176,51 @@ class HP49( object ):
       print "Unsupported encoding:", s
       return s
 
+  def headstr( self, utf=True ):
+    """Returns head of the stack as unicode string object.
+       Optionally skips utf encoding and returns HP-encoded string.
+       WARNING: will stop at first '#'. You must fetch the rest manually.
+       WARNING: will hang comms if stack is empty.
+    """
+    self.xeq( "IF DEPTH 0 ≠ THEN DUP →STR XMIT DROP END \"#\" XMIT DROP" )
+    s = com.read( until=ord('#') )[:-1]
+    s = hpstr.tostr( s )
+    if utf == True:
+      s = hpstr.hptoutf( s )
+    return s
+
+  def popstr( self, utf=True ):
+    """Pops head of the stack and returns as unicode string object.
+       Optionally skips utf encoding and returns HP-encoded string.
+       WARNING: will stop at first '#'. You must fetch the rest manually.
+       WARNING: will hang comms if stack is empty.
+    """
+    self.xeq( "IF DEPTH 0 ≠ THEN →STR XMIT DROP END \"#\" XMIT DROP" )
+    s = com.read( until=ord('#') )[:-1]
+    s = hpstr.tostr( s )
+    if utf == True:
+      s = hpstr.hptoutf( s )
+    return s
+
+  def pushstr( self, s, utf=True ):
+    """Converts utf8-encoded string to stack.
+       Optionally skips conversion.
+    """
+    return self.xeq( '"'+s+'"', utf=utf )
+
+  def pushobj( self, s, utf=True ):
+    """Like pushstr(), but also converts to object.
+    """
+    self.pushstr( s, utf=utf )
+    sleep( 0.1 )
+    return self.xeq( "STR→" )
+
   def path( self ):
     """Returns current device directory as HP-encoded string.
        Example: "{ HOME CASDIR }"
     """
-    protocol.cmd( "E", "PATH \x8dSTR XMIT DROP" )
-    protocol.waitack()
-    response = com.read( until=ord( '}' ) )
+    self.xeq( "PATH →STR XMIT DROP" )
+    response = com.read( until=ord('}') )
     return hpstr.tostr( response )
 
   def pwd( self ):
@@ -243,6 +283,11 @@ class HP49( object ):
     """
     print "****", self.version(), "****"
     print self.meminfo(), "bytes free"
+
+  def specialchars( self ):
+    """Prints a few utf-8-encoded special characters used im RPL programs.
+    """
+    print u'∠ ā ∇ √ ∫ Σ ▶ π ∂ ≤ ≥ ≠ α → ← ↓ ↑ γ δ ε η θ λ ρ σ τ ω Δ Π Ω ■ ∞'
 
   def help( self ):
     """Prints usage information.
