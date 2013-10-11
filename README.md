@@ -1,4 +1,4 @@
-pyHP
+pyHP49
 =======
 
 This is experimental code and most likely unfit for your purposes. It might accidentally delete all your calculator data, or worse. Make a backup!
